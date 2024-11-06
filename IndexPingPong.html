@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong</title>
+    <style>
+        /* Setting the style for the entire page */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+
+        /* Set the style for the game area */
+        canvas {
+            background: black;
+            display: block;
+            margin: 20px auto;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas element -->
+    <canvas id="PongCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("PongCanvas");
+        const context = canvas.getContext("2d");
+
+        // Create the ball and paddles here
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+        const ballRadius = 10;
+
+        // Handle the paddles for both the AI and player
+        let playerPaddleY = canvas.height / 2 - paddleHeight / 2;
+        let aiPaddleY = (canvas.height - paddleHeight) / 2;
+
+        // Handle the ball and setup the ball
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 4;
+        let ballSpeedY = 4; 
+
+        // Function to draw all elements of the game
+        function drawGameElement() {
+            // Clear the screen
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the paddles
+            context.fillStyle = "white"; // Player paddle
+            context.fillRect(0, playerPaddleY, paddleWidth, paddleHeight); 
+            context.fillStyle = "red"; // AI paddle
+            context.fillRect(canvas.width - paddleWidth, aiPaddleY, paddleWidth, paddleHeight); 
+
+            // Draw the ball
+            context.beginPath();
+            context.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            context.fillStyle = "white";
+            context.fill();
+            context.closePath();
+        }
+
+        // Function to move the ball and paddles
+        function move() {
+            // Move ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Handle the bounce of the ball from the top and bottom of the canvas
+            if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Ball collision with player paddle
+            if (ballX - ballRadius < paddleWidth) {
+                if (ballY > playerPaddleY && ballY < playerPaddleY + paddleHeight) {
+                    ballSpeedX = -ballSpeedX; // Bounce back
+                }
+            }
+
+            // Ball collision with AI paddle
+            if (ballX + ballRadius > canvas.width - paddleWidth) {
+                if (ballY > aiPaddleY && ballY < aiPaddleY + paddleHeight) {
+                    ballSpeedX = -ballSpeedX; // Bounce back
+                }
+            }
+
+            // Make AI paddle follow the ball with a simple logic
+            if (ballY > aiPaddleY + paddleHeight / 2) {
+                aiPaddleY += 4; // Move down
+            } else {
+                aiPaddleY -= 4; // Move up
+            }
+
+            // Prevent AI paddle from going out of bounds
+            aiPaddleY = Math.max(Math.min(aiPaddleY, canvas.height - paddleHeight), 0);
+        } // End of move function
+
+        // Allow the human player to control their paddle with the mouse
+        canvas.addEventListener("mousemove", event => {
+            const canvasPosition = canvas.getBoundingClientRect();
+            playerPaddleY = event.clientY - canvasPosition.top - paddleHeight / 2;
+
+            // Prevent the player paddle from going out of bounds
+            playerPaddleY = Math.max(Math.min(playerPaddleY, canvas.height - paddleHeight), 0);
+        });
+
+        // Game loop to keep updating the frame and game running
+        function gameLoop() {
+            move();
+            drawGameElement();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
+    </script> 
+</body>
+</html>
